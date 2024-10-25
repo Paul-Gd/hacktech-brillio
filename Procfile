@@ -1,1 +1,1 @@
-web: gunicorn hackTechDjango.wsgi:application
+web: cd api && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app

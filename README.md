@@ -5,7 +5,10 @@
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-2. Start django app:
+2. Start FastApi server:
     ```bash
-   python3 manage.py runserver localhost:8000
+   python3 -m uvicorn api.main:app --reload
    ```
+   
+## Hosting the app
+The app is hosted in Heroku at [https://hacktech-brillio-e28a25e2835a.herokuapp.com](https://hacktech-brillio-e28a25e2835a.herokuapp.com)
