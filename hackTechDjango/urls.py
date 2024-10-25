@@ -22,4 +22,5 @@ from hackTechDjango import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", views.index, name="index"),
+    path("predict_data/", views.predict_data, name="predict_data"),
 ]
