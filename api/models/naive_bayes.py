@@ -1,10 +1,10 @@
 import joblib
 
-# Load the model
-model = joblib.load('naive_bayes_model.joblib')
+# Load the model relative to the api directory
+model = joblib.load('../models/naive_bayes/naive_bayes_model.joblib')
 
 # Load the vectorizer
-vectorizer = joblib.load('count_vectorizer.joblib')
+vectorizer = joblib.load('../models/naive_bayes/count_vectorizer.joblib')
 
 print("Model and vectorizer loaded successfully!")
 
