@@ -1,47 +1,16 @@
-const page = document.getElementById('buttonDiv');
-const selectedClassName = 'current';
-const presetButtonColors = ['#3aa757', '#e8453c', '#f9bb2d', '#4688f1'];
+const hideModelNameEl = document.getElementById('hideModelName');
 
-// Reacts to a button click by marking the selected button and saving
-// the selection
-function handleButtonClick(event) {
-  // Remove styling from the previously selected color
-  const current = event.target.parentElement.querySelector(
-    `.${selectedClassName}`
-  );
-  if (current && current !== event.target) {
-    current.classList.remove(selectedClassName);
-  }
+// Add event listener for changes in checkbox
+hideModelNameEl.addEventListener('change', async (event) => {
+    const hideModelName = event.target.checked;
+    console.log(`Option selected: ${hideModelName}`);
+    // Store the checkbox state in chrome storage
+    chrome.storage.sync.set({ hideModelName });
+});
 
-  // Mark the button as selected
-  const color = event.target.dataset.color;
-  event.target.classList.add(selectedClassName);
-  chrome.storage.sync.set({ color });
-}
+// Retrieve the stored value on load
+chrome.storage.sync.get('hideModelName', ({ hideModelName }) => {
+    hideModelNameEl.checked = hideModelName || false;  // Set the checkbox based on stored value
+    console.log("hideModelName retrieved:", hideModelName);
+});
 
-// Add a button to the page for each supplied color
-function constructOptions(buttonColors) {
-  chrome.storage.sync.get('color', (data) => {
-    const currentColor = data.color;
-
-    // For each color we were provided…
-    for (const buttonColor of buttonColors) {
-      // …create a button with that color…
-      const button = document.createElement('button');
-      button.dataset.color = buttonColor;
-      button.style.backgroundColor = buttonColor;
-
-      // …mark the currently selected color…
-      if (buttonColor === currentColor) {
-        button.classList.add(selectedClassName);
-      }
-
-      // …and register a listener for when that button is clicked
-      button.addEventListener('click', handleButtonClick);
-      page.appendChild(button);
-    }
-  });
-}
-
-// Initialize the page by constructing the color options
-constructOptions(presetButtonColors);
