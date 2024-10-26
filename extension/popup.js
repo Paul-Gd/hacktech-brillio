@@ -424,6 +424,7 @@ async function getDataFromWebsiteAndPopulateIt() {
                 console.log("adding class to reviewElement ", reviewElement, predictionResponse);
                 if (!reviews[index].is_computer_generated) {
                     reviewElement.classList.add('validReviewClass');
+                    // TODO: don't use innerHTML as it's not safe
                     reviewElement.innerHTML += `
                         <div class="validCommentReview">
                             <svg id="Layer_1" class="validReviewIcon" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
