@@ -14,11 +14,12 @@ async function getActiveTab() {
 }
 
 // Helper function to execute a script in the tab using async/await
-async function executeScriptAsync(tabId, func) {
+async function executeScriptAsync(tabId, func, args) {
     return new Promise((resolve, reject) => {
         chrome.scripting.executeScript({
             target: {tabId: tabId},
-            func: func
+            func: func,
+            args: args
         }, (results) => {
             if (chrome.runtime.lastError) {
                 return reject(chrome.runtime.lastError);
@@ -28,6 +29,44 @@ async function executeScriptAsync(tabId, func) {
     });
 }
 
+const APP_HOST = 'https://hacktech-brillio-e28a25e2835a.herokuapp.com';
+
+async function makePostRequest(extractedData) {
+    const url = APP_HOST + '/review_prediction/';
+
+    const data = {
+        description: extractedData.description,
+        specs: extractedData.specs,
+        user_reviews: extractedData.user_reviews,
+        prediction_model: "naive_bayes",
+        page_url: "string"
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'DNT': '1',
+            'Origin': 'https://hacktech-brillio-e28a25e2835a.herokuapp.com',
+            'Referer': 'https://hacktech-brillio-e28a25e2835a.herokuapp.com/docs',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
 
 // Function to retrieve the title of the current tab
 async function getDataFromWebsiteAndPopulateIt() {
@@ -35,7 +74,7 @@ async function getDataFromWebsiteAndPopulateIt() {
         const tab = await getActiveTab();
         const results = await executeScriptAsync(tab.id, () => {
             // Function to extract product information from amazon.
-            // This should be extracted in another function
+            // This should be extracted in another function, however it should also be injected in the page.
             function extractProductSpecs() {
                 const productInfo = {};
 
@@ -84,7 +123,7 @@ async function getDataFromWebsiteAndPopulateIt() {
                     // Create review object and push it to the reviews array
                     if (reviewText && reviewValue) {
                         reviews.push({
-                            review_text: reviewText,
+                            text: reviewText,
                             review_value: reviewValue
                         });
                     }
@@ -95,17 +134,21 @@ async function getDataFromWebsiteAndPopulateIt() {
 
             const description = document.querySelector('#feature-bullets ul.a-unordered-list').innerText;
             const specs = extractProductSpecs();
-            const reviews = extractReviewInformation();
-            return {description, specs, reviews};
+            const user_reviews = extractReviewInformation();
+            console.log("results of extraction", {description, specs, user_reviews});
+            return {description, specs, user_reviews};
         });
-        console.log("results", results[0]);
+
 
         // Update the popup with the title
         if (results && results[0] && results[0].result) {
             document.getElementById('pageTitle').textContent = results[0].result.title;
         } else {
-            document.getElementById('pageTitle').textContent = 'Failed to retrieve data';
+            document.getElementById('pageTitle').textContent = 'Failed to load reviews';
         }
+
+        const response = await makePostRequest(results[0].result);
+        console.log("response from server", response);
     } catch (error) {
         console.error('Error retrieving title:', error);
         document.getElementById('pageTitle').textContent = 'Error retrieving title';
