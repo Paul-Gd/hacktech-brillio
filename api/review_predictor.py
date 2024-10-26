@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 from models.model_types import PredictionModels
 from fastapi.responses import JSONResponse
-from typing import Union
 import json
 
 review_prediction_router = APIRouter()
@@ -30,8 +29,10 @@ class AggregatedReviewResults(BaseModel):
 
 class IndividualReviewResult(BaseModel):
     is_computer_generated: bool = Field(title="Whether the review is computer generated or not")
-    feedback_from_model: Union[str, dict] | None = Field(default=None, title="Additional feedback returned by the model")
-    certainty: float | None = Field(default=None, title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
+    feedback_from_model: str | dict | None = Field(default=None,
+                                                         title="Additional feedback returned by the model")
+    certainty: float | None = Field(default=None,
+                                    title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
 
 
 class ReviewPredictionResponse(BaseModel):
@@ -59,11 +60,12 @@ def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
     elif review_req.prediction_model == PredictionModels.BERT:
         from models.bert import load_model, explain_with_lime
         model, tokenizer = load_model('../models/bert/saved_model_distilbert')
-        
+
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
-            explanation = explain_with_lime(review.text, model, tokenizer, device='mps', num_features=len(review.text.split(' ')))
-            
+            explanation = explain_with_lime(review.text, model, tokenizer, device='mps',
+                                            num_features=len(review.text.split(' ')))
+
             # Ensure explanation is a Python dictionary
             explanation_data = json.loads(explanation)  # Convert JSON string back to dictionary
             print(explanation_data, '0----------------------->')
@@ -74,7 +76,7 @@ def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
                     certainty=explanation_data["certainty"]
                 )
             )
-        
+
         response_data = ReviewPredictionResponse(reviews=computed_reviews_by_model)
         return JSONResponse(content=response_data.dict())
 
