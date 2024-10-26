@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel, Field
 
 from models.model_types import PredictionModels
@@ -42,7 +42,7 @@ class ReviewPredictionResponse(BaseModel):
 
 
 @review_prediction_router.post("/review_prediction/")
-def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionResponse:
+def review_prediction(review_req: ProductReviewRequest, request: Request) -> ReviewPredictionResponse:
     if review_req.prediction_model == PredictionModels.NAIVE_BAYES:
         from models.naive_bayes_lime import explain_review
         computed_reviews_by_model = []
@@ -70,26 +70,28 @@ def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionRespo
         return ReviewPredictionResponse(reviews=computed_reviews_by_model)
 
     elif review_req.prediction_model == PredictionModels.BERT:
-        from models.bert import load_model, explain_with_lime
-        model, tokenizer = load_model('../models/bert/saved_model_distilbert')
+        # Access the preloaded BERT model and tokenizer from app state
+        bert_model = request.app.state.bert_model
+        bert_tokenizer = request.app.state.bert_tokenizer
+        
+        if bert_model is None or bert_tokenizer is None:
+            raise HTTPException(status_code=500, detail="Model not loaded. Please try again later.")
 
+        # Use the preloaded model and tokenizer
+        from models.bert import prediction
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
-            explanation = explain_with_lime(review.text, model, tokenizer, device='mps',
+            explanation = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
                                             num_features=len(review.text.split(' ')))
-
-            # Ensure explanation is a Python dictionary
-            explanation_data = json.loads(explanation)  # Convert JSON string back to dictionary
-            print(explanation_data, '0----------------------->')
+            
             computed_reviews_by_model.append(
                 IndividualReviewResult(
-                    is_computer_generated=explanation_data["predicted_label"],
-                    feedback_from_model=None,  # This is already in a dictionary format
-                    certainty=explanation_data["certainty"]
+                    is_computer_generated=explanation["predicted_label"],
+                    feedback_from_model=None,
+                    certainty=explanation.get("certainty")
                 )
             )
 
         return ReviewPredictionResponse(reviews=computed_reviews_by_model)
 
-    # Return an empty response if the model type is not recognized
     return ReviewPredictionResponse(reviews=[])

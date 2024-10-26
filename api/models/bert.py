@@ -2,7 +2,6 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from lime.lime_text import LimeTextExplainer
 import numpy as np
-import json
 
 def load_model(model_dir, device=None):
     if device is None:
@@ -40,7 +39,7 @@ def predict_proba(texts, model, tokenizer, device=None, max_length=512):
 
     return certainties.cpu().numpy()  # Convert to NumPy format required by LIME
 
-def explain_with_lime(text_instance, model, tokenizer, device=None, max_length=512, num_features=10):
+def prediction(text_instance, model, tokenizer, device=None, max_length=512, num_features=10):
     if device is None:
         device = torch.device('mps')
     
@@ -71,6 +70,6 @@ def explain_with_lime(text_instance, model, tokenizer, device=None, max_length=5
         # "explanation": explanation_key_value  # Explanation as a dictionary
     }
 
-    explanation_json = json.dumps(explanation_data)
+    explanation_json = explanation_data
 
     return explanation_json
