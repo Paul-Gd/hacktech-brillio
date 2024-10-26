@@ -7,8 +7,7 @@ import torch
 # Define lifespan event to handle model loading and unloading
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    model_dir = "../models/bert/saved_model_distilbert"
-
+    model_dir = "ArpadAuner/hacktech"
     print("Loading BERT model and tokenizer...")
     bert_model, bert_tokenizer = load_model(model_dir, device=torch.device('cpu'))
     print("BERT model and tokenizer loaded successfully.")
