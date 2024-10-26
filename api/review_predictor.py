@@ -6,12 +6,18 @@ from models.model_types import PredictionModels
 review_prediction_router = APIRouter()
 
 
+class ProductReview(BaseModel):
+    text: str = Field(title="The review text")
+    review_value: int | None = Field(default=None, title="The review value")
+
+
 class ProductReviewRequest(BaseModel):
     description: str | None = Field(default=None, title="The description of the item")
     specs: dict[str, str] = Field(default={}, title="The product specifications from page")
-    user_reviews: list[str] = Field(title="The reviews of the product")
+    user_reviews: list[ProductReview] = Field(title="The reviews of the product")
     prediction_model: PredictionModels = Field(title="The model to use for prediction",
                                                default=PredictionModels.NAIVE_BAYES)
+    page_url: str | None = Field(default=None, title="The URL of the product page")
 
 
 class AggregatedReviewResults(BaseModel):
@@ -22,6 +28,8 @@ class AggregatedReviewResults(BaseModel):
 class IndividualReviewResult(BaseModel):
     is_computer_generated: bool = Field(title="Whether the review is computer generated or not")
     feedback_from_model: str | None = Field(default=None, title="Additional feedback returned by the model")
+    certainty: float | None = Field(default=None,
+                                    title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
 
 
 class ReviewPredictionResponse(BaseModel):
