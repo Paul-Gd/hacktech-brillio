@@ -39,26 +39,51 @@
 //
 // function getTitle() { return document.title; }
 //
-
-// Function to retrieve the title of the current tab
-function getTabTitle() {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const tab = tabs[0]; // Get the active tab
-        // Use chrome scripting to inject a script that gets the document's title
-        chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: () => {
-                return document.title;
-            } // Injects a script to get the document title
-        }, (results) => {
-            if (results && results[0] && results[0].result) {
-                document.getElementById('pageTitle').textContent = results[0].result; // Update the popup with the title
-            } else {
-                document.getElementById('pageTitle').textContent = 'Title not found';
+// Helper function to get the active tab using async/await
+async function getActiveTab() {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
             }
+            resolve(tabs[0]); // Return the active tab
         });
     });
 }
 
+// Helper function to execute a script in the tab using async/await
+async function executeScriptAsync(tabId, func) {
+    return new Promise((resolve, reject) => {
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: func
+        }, (results) => {
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
+            }
+            resolve(results);
+        });
+    });
+}
+
+// Function to retrieve the title of the current tab
+async function getTabTitle() {
+    try {
+        const tab = await getActiveTab();
+        const results = await executeScriptAsync(tab.id, () => document.title);
+
+        // Update the popup with the title
+        if (results && results[0] && results[0].result) {
+            document.getElementById('pageTitle').textContent = results[0].result;
+        } else {
+            document.getElementById('pageTitle').textContent = 'Title not found';
+        }
+    } catch (error) {
+        console.error('Error retrieving title:', error);
+        document.getElementById('pageTitle').textContent = 'Error retrieving title';
+    }
+}
+
 // Call the function when the popup is loaded
 document.addEventListener('DOMContentLoaded', getTabTitle);
+
