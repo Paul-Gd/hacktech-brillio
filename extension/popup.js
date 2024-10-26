@@ -36,7 +36,7 @@ async function makePostRequest(extractedData) {
         description: extractedData.description,
         specs: extractedData.specs,
         user_reviews: extractedData.user_reviews,
-        prediction_model: "naive_bayes",
+        prediction_model: "random",
         page_url: "string"
     };
 
@@ -57,13 +57,66 @@ const stylesInjected = `
 .fakeReviewClass {
     border: 1px solid #E22727;
     border-radius: 4px;
+    box-shadow: inset 0px 0px 10px #e227275c;
+    padding: 8px;
 }
 
 .validReviewClass {
     border: 1px solid #46BD72;
     border-radius: 4px;
+    box-shadow: inset 0px 0px 10px #46bd7291;
+    padding: 8px;
+}
+
+.commentReview{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    border-radius: 0px 0px 0px 8px;
+    border: 1px solid #46BD72;
+    background: #E0FFEC;
+    display: flex;
+    padding: 10px 12px;
+    align-items: center;
+    gap: 8px;
+}
+.commentValidReviewIcon{
+    padding: 4px;
+    border-radius: 16px;
+    background: #AEF0C7;
+    width: 28px;
+    height: 28px;
+}
+.commentReviewText{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.commentReviewTextFirstPar{
+    color: #198842;
+    font-family: Inter;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-family: sans-serif;
+    margin-bottom: 0px;
+}
+.commentReviewTextSecondPar{
+    color: #198842;
+    font-family: Inter;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    font-family: sans-serif;
+    margin-bottom: 0px;
 }
 `;
+
 async function getDataFromWebsiteAndPopulateIt() {
     try {
         const tab = await getActiveTab();
@@ -141,8 +194,65 @@ async function getDataFromWebsiteAndPopulateIt() {
             document.getElementById('pageTitle').textContent = 'Failed to load reviews';
         }
 
-        const response = await makePostRequest(results[0].result);
-        console.log("response from server", response);
+        // const predictionResponse = await makePostRequest(results[0].result);
+        const predictionResponse = {
+            "reviews": [
+                {
+                    "is_computer_generated": false,
+                    "feedback_from_model": "grape",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": false,
+                    "feedback_from_model": "orange",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": true,
+                    "feedback_from_model": "grape",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": true,
+                    "feedback_from_model": "watermelon",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": false,
+                    "feedback_from_model": "blueberry",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": true,
+                    "feedback_from_model": "orange",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": true,
+                    "feedback_from_model": "grape",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": false,
+                    "feedback_from_model": "grape",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": true,
+                    "feedback_from_model": "mango",
+                    "certainty": null
+                },
+                {
+                    "is_computer_generated": false,
+                    "feedback_from_model": "mango",
+                    "certainty": null
+                }
+            ],
+            "aggregated_review_data": null
+        }
+        console.log("response from server", predictionResponse);
+
+        // Inject the CSS class into the page
         await executeScriptAsync(tab.id, (styleToInject) => {
             // Inject CSS class into the page
             function injectClassAndStyle(style) {
@@ -159,6 +269,41 @@ async function getDataFromWebsiteAndPopulateIt() {
 
             injectClassAndStyle(styleToInject)
         }, [stylesInjected]);
+
+        // Inject the elements into the page
+        await executeScriptAsync(tab.id, (predictionResponse) => {
+            const reviews = predictionResponse.reviews
+            const reviewElements = document.querySelectorAll('.review');
+            // for each review element, add a class to it, based on reviews.is_computer_generated
+            reviewElements.forEach((reviewElement, index) => {
+                console.log("adding class to reviewElement ", reviewElement, predictionResponse);
+                if (reviews[index].is_computer_generated) {
+                    reviewElement.classList.add('fakeReviewClass');
+                    reviewElement.innerHTML += `<div class="commentReview">
+                            <svg id="Layer_1" class="commentValidReviewIcon" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                                <defs>
+                                <style>
+                                  .cls-1 {
+                                    fill: none;
+                                  }
+                                </style>
+                              </defs>
+                              <polygon points="13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24"/>
+                              <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/>
+                            </svg>
+                            <div class="commentReviewText">
+                                <p class="commentReviewTextFirstPar">Valid review</p>
+                                <p class="commentReviewTextSecondPar">View details</p>
+                            </div>
+                        </div>`;
+                } else {
+                    reviewElement.classList.add('validReviewClass');
+                }
+            });
+
+            injectClassAndStyle(styleToInject)
+        }, [predictionResponse]);
+
     } catch (error) {
         console.error('Error retrieving title:', error);
         document.getElementById('pageTitle').textContent = 'Error retrieving title';
