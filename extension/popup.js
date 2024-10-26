@@ -405,7 +405,10 @@ async function getDataFromWebsiteAndPopulateIt() {
                 return reviews;
             }
 
-            const description = document.querySelector('#feature-bullets ul.a-unordered-list').innerText;
+            // In some rare cases the '#feature-bullets ul.a-unordered-list' doesn't return the description (it will be
+            // undefined)
+            const description = document.querySelector('#feature-bullets ul.a-unordered-list') &&
+                document.querySelector('#feature-bullets ul.a-unordered-list').innerText;
             const specs = extractProductSpecs();
             const user_reviews = extractReviewInformation();
             console.log("results of extraction", {description, specs, user_reviews});
