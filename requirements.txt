@@ -11,7 +11,6 @@ torch==2.2.0
 --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
 torchvision==0.1.6
 transformers==4.46.0
-#torch~=2.5.0+cpu
-#transformers~=4.46.0
+numpy==2.0.2
 #openai api
 openai
