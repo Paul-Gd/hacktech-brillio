@@ -66,12 +66,31 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
                 )
             )
         return ReviewPredictionResponse(reviews=computed_reviews_by_model)
+    elif review_req.prediction_model == PredictionModels.GPT_4:
+        from models.gpt_4 import analyze_and_sumarize_gpt
+
+        summary_and_rating_data = analyze_and_sumarize_gpt(review_req)
+        computed_reviews_by_model = []
+        for review in summary_and_rating_data["reviews"]:
+            computed_reviews_by_model.append(
+                IndividualReviewResult(
+                    is_computer_generated=review['label'] == "Yes",
+                    feedback_from_model=review['explanation'],
+                    certainty=review['confidence']
+                )
+            )
+        aggregated_review_data = AggregatedReviewResults(
+            adjusted_review_score=summary_and_rating_data["adjusted_review_score"],
+            feedback_from_model=summary_and_rating_data["feedback_from_model"]
+        )
+        return ReviewPredictionResponse(reviews=computed_reviews_by_model,
+                                        aggregated_review_data=aggregated_review_data)
 
     elif review_req.prediction_model == PredictionModels.BERT:
         # Access the preloaded BERT model and tokenizer from app state
         bert_model = request.app.state.bert_model
         bert_tokenizer = request.app.state.bert_tokenizer
-        
+
         if bert_model is None or bert_tokenizer is None:
             raise HTTPException(status_code=500, detail="Model not loaded. Please try again later.")
 
@@ -80,8 +99,8 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
             response = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
-                                            num_features=len(review.text.split(' ')))
-            
+                                  num_features=len(review.text.split(' ')))
+
             computed_reviews_by_model.append(
                 IndividualReviewResult(
                     is_computer_generated=response.get('predicted_label'),
