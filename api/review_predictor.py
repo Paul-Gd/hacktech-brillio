@@ -2,6 +2,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from models.model_types import PredictionModels
+from fastapi.responses import JSONResponse
+from typing import Union
+import json
 
 review_prediction_router = APIRouter()
 
@@ -27,9 +30,8 @@ class AggregatedReviewResults(BaseModel):
 
 class IndividualReviewResult(BaseModel):
     is_computer_generated: bool = Field(title="Whether the review is computer generated or not")
-    feedback_from_model: str | None = Field(default=None, title="Additional feedback returned by the model")
-    certainty: float | None = Field(default=None,
-                                    title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
+    feedback_from_model: Union[str, dict] | None = Field(default=None, title="Additional feedback returned by the model")
+    certainty: float | None = Field(default=None, title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
 
 
 class ReviewPredictionResponse(BaseModel):
@@ -39,16 +41,42 @@ class ReviewPredictionResponse(BaseModel):
 
 
 @review_prediction_router.post("/review_prediction/")
-def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionResponse:
+def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
     if review_req.prediction_model == PredictionModels.NAIVE_BAYES:
         from models.naive_bayes_lime import explain_review
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
             is_computer_generated, influential_words = explain_review(review.text)
             computed_reviews_by_model.append(
-                IndividualReviewResult(is_computer_generated=is_computer_generated,
-                                       feedback_from_model=influential_words)
+                IndividualReviewResult(
+                    is_computer_generated=is_computer_generated,
+                    feedback_from_model=influential_words
+                )
             )
-        return ReviewPredictionResponse(reviews=computed_reviews_by_model,
-                                        aggregated_review_data=None)
-    return ReviewPredictionResponse(reviews=[])
+        response_data = ReviewPredictionResponse(reviews=computed_reviews_by_model)
+        return JSONResponse(content=response_data.dict())
+
+    elif review_req.prediction_model == PredictionModels.BERT:
+        from models.bert import load_model, explain_with_lime
+        model, tokenizer = load_model('../models/bert/saved_model_distilbert')
+        
+        computed_reviews_by_model = []
+        for review in review_req.user_reviews:
+            explanation = explain_with_lime(review.text, model, tokenizer, device='mps', num_features=len(review.text.split(' ')))
+            
+            # Ensure explanation is a Python dictionary
+            explanation_data = json.loads(explanation)  # Convert JSON string back to dictionary
+            print(explanation_data, '0----------------------->')
+            computed_reviews_by_model.append(
+                IndividualReviewResult(
+                    is_computer_generated=explanation_data["predicted_label"],
+                    feedback_from_model=None,  # This is already in a dictionary format
+                    certainty=explanation_data["certainty"]
+                )
+            )
+        
+        response_data = ReviewPredictionResponse(reviews=computed_reviews_by_model)
+        return JSONResponse(content=response_data.dict())
+
+    # Return an empty response if the model type is not recognized
+    return JSONResponse(content=ReviewPredictionResponse(reviews=[]).dict())
