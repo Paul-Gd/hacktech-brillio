@@ -33,10 +33,14 @@ class ReviewPredictionResponse(BaseModel):
 @review_prediction_router.post("/review_prediction/")
 def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionResponse:
     if review_req.prediction_model == PredictionModels.NAIVE_BAYES:
-        from models.naive_bayes import predict_review_is_cg
-
-        computed_reviews_by_model = [IndividualReviewResult(is_computer_generated=predict_review_is_cg(review)) for
-                                     review in review_req.user_reviews]
+        from models.naive_bayes_lime import explain_review
+        computed_reviews_by_model = []
+        for review in review_req.user_reviews:
+            is_computer_generated, influential_words = explain_review(review)
+            computed_reviews_by_model.append(
+                IndividualReviewResult(is_computer_generated=is_computer_generated,
+                                       feedback_from_model=influential_words)
+            )
         return ReviewPredictionResponse(reviews=computed_reviews_by_model,
                                         aggregated_review_data=None)
     return ReviewPredictionResponse(reviews=[])
