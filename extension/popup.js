@@ -2,11 +2,44 @@ const dropdownBtn = document.getElementById("dropdown-toggle");
 const dropdownBtnText = document.getElementById("dropdown-toggle-text");
 const dropdownMenu = document.getElementById("dropdown");
 const toggleArrow = document.getElementById("arrow");
+const score = document.getElementById("score")
+const summary = document.getElementById("summary-point")
+const hideFakeReviews = document.getElementById("hideFakeReviews")
+const hideModelNameEl = document.getElementById('change-model');
 
 const toggleDropdown = function () {
     dropdownMenu.classList.toggle("show");
     toggleArrow.classList.toggle("arrow");
 };
+
+hideFakeReviews.addEventListener('change', async function () {
+    chrome.storage.sync.set({hideFakeReviews: this.checked});
+    const tab = await getActiveTab();
+    await executeScriptAsync(tab.id, (hideReview) => {
+        const reviewElements = document.querySelectorAll('.review');
+        // for each review element, add a class to it, based on reviews.is_computer_generated
+        reviewElements.forEach((reviewElement, index) => {
+            if (reviewElement.classList.contains('fakeReviewClass')) {
+                if (hideReview) {
+                    reviewElement.classList.add('hideFakeReview');
+                } else {
+                    reviewElement.classList.remove('hideFakeReview');
+                }
+            }
+        });
+    }, [this.checked]);
+});
+
+// Retrieve the stored value on load
+chrome.storage.sync.get('hideModelName', ({ hideModelName }) => {
+    if(hideModelName || false){
+        hideModelNameEl.classList.add("hideElement");
+    }
+    else{
+        hideModelNameEl.classList.remove("hideElement");
+    }
+    console.log("hideModelName retrieved:", hideModelName);
+});
 
 dropdownBtn.addEventListener("click", function (e) {
     e.stopPropagation();
@@ -260,6 +293,21 @@ const stylesInjected = `
 }
 `;
 
+function displayScoreAndSummaryInExtension(predictionResponse) {
+    score.textContent = (predictionResponse.aggregated_review_data.adjusted_review_score * 10).toFixed(1);
+    summary.textContent = predictionResponse.aggregated_review_data.feedback_from_model;
+    console.log("score", predictionResponse.aggregated_review_data.adjusted_review_score * 10);
+    if ((predictionResponse.aggregated_review_data.adjusted_review_score * 10) > 8) {
+        score.className = "good-score";
+        return;
+    }
+    if ((predictionResponse.aggregated_review_data.adjusted_review_score * 10) > 4) {
+        score.className = "medium-score";
+        return;
+    }
+    score.className = "bad-score";
+}
+
 async function getDataFromWebsiteAndPopulateIt() {
     try {
         const tab = await getActiveTab();
@@ -393,7 +441,10 @@ async function getDataFromWebsiteAndPopulateIt() {
                     "certainty": null
                 }
             ],
-            "aggregated_review_data": null
+            "aggregated_review_data": {
+                "adjusted_review_score": 0.22,
+                "feedback_from_model": "da das das da ds asd a ds asd a dasd a d"
+            }
         }
         console.log("response from server", predictionResponse);
 
@@ -414,6 +465,7 @@ async function getDataFromWebsiteAndPopulateIt() {
 
             injectClassAndStyle(styleToInject)
         }, [stylesInjected]);
+        displayScoreAndSummaryInExtension(predictionResponse);
 
         // Inject the elements into the page
         await executeScriptAsync(tab.id, (predictionResponse) => {

@@ -1,14 +1,26 @@
 <!doctype html>
 <html>
-<head>
-    <link rel="stylesheet" href="options.css"/>
-</head>
-<body>
-<label for="hideModelName">Show Name:</label>
-<label class="switch">
-    <input type="checkbox" id="hideModelName">
-    <span class="slider round"></span>
-</label>
-<script src="options.js"></script>
-</body>
+    <head>
+        <link rel="stylesheet" href="main.css"/>
+        <link rel="stylesheet" href="options.css"/>
+        <link rel="stylesheet" href="switch.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <main>
+            <img id="logo" src="./images/get_started128.png"/>
+            <h1 id="options-title">Trusted Reviews</h1>
+            <p id="options-text" class="text">Choose your preferred settings to personalize how the extension works for you.</p>
+            <div class="checkbox-container">
+                <label for="hideModelName" class="label">Enable model selection</label>
+                <label class="switch">
+                    <input type="checkbox" id="hideModelName">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <script src="options.js"></script>
+        </main>
+    </body>
 </html>

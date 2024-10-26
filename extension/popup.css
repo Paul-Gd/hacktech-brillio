@@ -32,17 +32,11 @@ body {
   cursor: pointer;
 }
 
-#change-model {
+.change-model {
   display: flex;
   align-items: center;
   gap: 8px;
   align-self: stretch;
-}
-
-.label {
-  font-family: "Inter-Regular", Helvetica, system-ui;
-  font-weight: 400;
-  color: #ffffff;
 }
 
 #score-container {
@@ -80,12 +74,6 @@ body {
   font-size: 14px;
 }
 
-.checkbox-container {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
 #summary-container {
   display: flex;
   flex-direction: column;
@@ -99,7 +87,6 @@ body {
   font-size: 12px;
 }
 
-.summary-point {
-  color: #d7d7d7;
-  margin: 8px;
+.hideElement {
+  display: none;
 }

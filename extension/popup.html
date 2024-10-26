@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="main.css"/>
     <link rel="stylesheet" href="popup.css"/>
     <link rel="stylesheet" href="switch.css"/>
     <link rel="stylesheet" href="dropdown.css"/>
@@ -15,7 +16,7 @@
         <div id="title">Reviews analyse</div>
         <img class="icon" src="svg/close.svg" />
       </div>
-      <div id="change-model">
+      <div id="change-model" class="change-model">
         <div class="label">Model</div>
         <div id="dropdown-container">
           <button id="dropdown-toggle">
@@ -51,21 +52,15 @@
       <div class="checkbox-container">
         <div class="label">Hide fake reviews</div>
         <label class="switch">
-          <input type="checkbox">
+          <input type="checkbox" id="hideFakeReviews">
           <span class="slider round"></span>
         </label>
       </div>
       <div id="summary-container">
         <div class="subtitle">Summary</div>
         <div>
-          <p class="summary-point">
+          <p class="text" id="summary-point">
             There are many similar reviews with minor differences
-          </p>
-          <p class="summary-point">
-            Lorem ispum
-          </p>
-          <p class="summary-point">
-            There are many similar reviews with minor differences longer thing explanation
           </p>
         </div>
       </div>
