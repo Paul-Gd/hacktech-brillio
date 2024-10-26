@@ -7,9 +7,9 @@ joblib~=1.4.2
 scikit-learn~=1.5.2
 lime~=0.2.0.1
 --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-torch==2.2.0
+torch==2.5.0
 --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-torchvision==0.1.6
+torchvision==0.1.4
 transformers==4.46.0
 numpy==2.0.2
 #openai api
