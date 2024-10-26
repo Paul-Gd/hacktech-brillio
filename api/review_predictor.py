@@ -30,7 +30,7 @@ class AggregatedReviewResults(BaseModel):
 class IndividualReviewResult(BaseModel):
     is_computer_generated: bool = Field(title="Whether the review is computer generated or not")
     feedback_from_model: str | dict | None = Field(default=None,
-                                                         title="Additional feedback returned by the model")
+                                                   title="Additional feedback returned by the model")
     certainty: float | None = Field(default=None,
                                     title="The certainty of the model in the prediction between 0 and 1. 1 is highest certainty")
 
@@ -42,7 +42,7 @@ class ReviewPredictionResponse(BaseModel):
 
 
 @review_prediction_router.post("/review_prediction/")
-def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
+def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionResponse:
     if review_req.prediction_model == PredictionModels.NAIVE_BAYES:
         from models.naive_bayes_lime import explain_review
         computed_reviews_by_model = []
@@ -54,8 +54,20 @@ def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
                     feedback_from_model=influential_words
                 )
             )
-        response_data = ReviewPredictionResponse(reviews=computed_reviews_by_model)
-        return JSONResponse(content=response_data.dict())
+        return ReviewPredictionResponse(reviews=computed_reviews_by_model)
+    elif review_req.prediction_model == PredictionModels.RANDOM:
+        from models.random import predict_review
+
+        computed_reviews_by_model = []
+        for review in review_req.user_reviews:
+            is_computer_generated, influential_words = predict_review(review.text)
+            computed_reviews_by_model.append(
+                IndividualReviewResult(
+                    is_computer_generated=is_computer_generated,
+                    feedback_from_model=influential_words
+                )
+            )
+        return ReviewPredictionResponse(reviews=computed_reviews_by_model)
 
     elif review_req.prediction_model == PredictionModels.BERT:
         from models.bert import load_model, explain_with_lime
@@ -77,8 +89,7 @@ def review_prediction(review_req: ProductReviewRequest) -> JSONResponse:
                 )
             )
 
-        response_data = ReviewPredictionResponse(reviews=computed_reviews_by_model)
-        return JSONResponse(content=response_data.dict())
+        return ReviewPredictionResponse(reviews=computed_reviews_by_model)
 
     # Return an empty response if the model type is not recognized
-    return JSONResponse(content=ReviewPredictionResponse(reviews=[]).dict())
+    return ReviewPredictionResponse(reviews=[])
