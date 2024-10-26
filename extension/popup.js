@@ -4,32 +4,32 @@ const dropdownMenu = document.getElementById("dropdown");
 const toggleArrow = document.getElementById("arrow");
 
 const toggleDropdown = function () {
-  dropdownMenu.classList.toggle("show");
-  toggleArrow.classList.toggle("arrow");
+    dropdownMenu.classList.toggle("show");
+    toggleArrow.classList.toggle("arrow");
 };
 
 dropdownBtn.addEventListener("click", function (e) {
-  e.stopPropagation();
-  toggleDropdown();
+    e.stopPropagation();
+    toggleDropdown();
 });
 
 document.documentElement.addEventListener("click", function () {
-  if (dropdownMenu.classList.contains("show")) {
-    toggleDropdown();
-  }
+    if (dropdownMenu.classList.contains("show")) {
+        toggleDropdown();
+    }
 });
 
 dropdownMenu.addEventListener("click", function (e) {
     if (e.target && e.target.tagName === "LI") {
         dropdownBtnText.textContent = e.target.textContent.trim();
         toggleDropdown();
-      }
+    }
 });
 
 // Helper function to get the active tab using async/await
 async function getActiveTab() {
     return new Promise((resolve, reject) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             if (chrome.runtime.lastError) {
                 return reject(chrome.runtime.lastError);
             }
@@ -42,7 +42,7 @@ async function getActiveTab() {
 async function executeScriptAsync(tabId, func) {
     return new Promise((resolve, reject) => {
         chrome.scripting.executeScript({
-            target: { tabId: tabId },
+            target: {tabId: tabId},
             func: func
         }, (results) => {
             if (chrome.runtime.lastError) {
@@ -141,7 +141,7 @@ const stylesInjected = `
     padding: 8px;
 }
 
-.commentReview{
+.validCommentReview{
     position: absolute;
     top: 0px;
     right: 0px;
@@ -153,10 +153,29 @@ const stylesInjected = `
     align-items: center;
     gap: 8px;
 }
-.commentValidReviewIcon{
+.cgCommentReview{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    border-radius: 0px 0px 0px 8px;
+    border: 1px solid #E22727;
+    background: #FFE0E0;
+    display: flex;
+    padding: 10px 12px;
+    align-items: center;
+    gap: 8px;
+}
+.validReviewIcon{
     padding: 4px;
     border-radius: 16px;
     background: #AEF0C7;
+    width: 28px;
+    height: 28px;
+}
+.cgReviewIcon{
+    padding: 4px;
+    border-radius: 16px;
+    background: #F0AEAE;
     width: 28px;
     height: 28px;
 }
@@ -168,7 +187,7 @@ const stylesInjected = `
     gap: 4px;
 }
 
-.commentReviewTextFirstPar{
+.validReviewTextFirstPar{
     color: #198842;
     font-family: Inter;
     font-size: 12px;
@@ -178,8 +197,28 @@ const stylesInjected = `
     font-family: sans-serif;
     margin-bottom: 0px;
 }
-.commentReviewTextSecondPar{
+.cgReviewTextFirstPar{
+    color: #881919;
+    font-family: Inter;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-family: sans-serif;
+    margin-bottom: 0px;
+}
+.validCommentReviewTextSecondPar{
     color: #198842;
+    font-family: Inter;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    font-family: sans-serif;
+    margin-bottom: 0px;
+}
+.cgCommentReviewTextSecondPar{
+    color: #881919;
     font-family: Inter;
     font-size: 10px;
     font-style: normal;
@@ -197,23 +236,27 @@ const stylesInjected = `
 
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 120px;
+  width: 276px;
   background-color: black;
   color: #fff;
   text-align: center;
   border-radius: 6px;
-  padding: 5px 0;
+  text-align: left;
+  padding: 12px;
 
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
-  top: 100%;
+  top: 26px;
   left: 50%;
-  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+  margin-left: -221px; 
 }
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+.hideFakeReview{
+  display: none;
 }
 `;
 
@@ -289,9 +332,11 @@ async function getDataFromWebsiteAndPopulateIt() {
 
         // Update the popup with the title
         if (results && results[0] && results[0].result) {
-            document.getElementById('pageTitle').textContent = results[0].result.title;
+            //TODO populate html from this
+            // document.getElementById('pageTitle').textContent = results[0].result.title;
         } else {
-            document.getElementById('pageTitle').textContent = 'Failed to load reviews';
+            //TODO show error
+            // document.getElementById('pageTitle').textContent = 'Failed to load reviews';
         }
 
         // const predictionResponse = await makePostRequest(results[0].result);
@@ -300,12 +345,12 @@ async function getDataFromWebsiteAndPopulateIt() {
                 {
                     "is_computer_generated": false,
                     "feedback_from_model": "grape",
-                    "certainty": null
+                    "certainty": 0.6
                 },
                 {
                     "is_computer_generated": false,
                     "feedback_from_model": "orange",
-                    "certainty": null
+                    "certainty": 0.8
                 },
                 {
                     "is_computer_generated": true,
@@ -377,10 +422,11 @@ async function getDataFromWebsiteAndPopulateIt() {
             // for each review element, add a class to it, based on reviews.is_computer_generated
             reviewElements.forEach((reviewElement, index) => {
                 console.log("adding class to reviewElement ", reviewElement, predictionResponse);
-                if (reviews[index].is_computer_generated) {
-                    reviewElement.classList.add('fakeReviewClass');
-                    reviewElement.innerHTML += `<div class="commentReview">
-                            <svg id="Layer_1" class="commentValidReviewIcon" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                if (!reviews[index].is_computer_generated) {
+                    reviewElement.classList.add('validReviewClass');
+                    reviewElement.innerHTML += `
+                        <div class="validCommentReview">
+                            <svg id="Layer_1" class="validReviewIcon" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                                 <defs>
                                 <style>
                                   .cls-1 {
@@ -392,22 +438,47 @@ async function getDataFromWebsiteAndPopulateIt() {
                               <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32"/>
                             </svg>
                             <div class="commentReviewText">
-                                <p class="commentReviewTextFirstPar">Valid review</p>
-                                <p class="commentReviewTextSecondPar">View details</p>
-                                <div class="tooltip">Hover over me
+                                <p class="validReviewTextFirstPar">Valid review</p>
+                                <div class="tooltip">
+                                    <p class="validCommentReviewTextSecondPar">View details</p>
                                     <span class="tooltiptext">
-                                        <p>t1</p>
-                                        <p>t2</p>
+                                        <p>${reviews[index].certainty ? `Certainty ${Math.round(reviews[index].certainty * 100)}%` : "Review details"}</p>
+                                        <p>${reviews[index].feedback_from_model ? reviews[index].feedback_from_model : "Missing feedback"}</p>
                                     </span>
-                                   </div>
+                                </div>
                             </div>
                         </div>`;
                 } else {
-                    reviewElement.classList.add('validReviewClass');
+                    reviewElement.classList.add('fakeReviewClass');
+                    // reviewElement.classList.add('hideFakeReview');
+                    reviewElement.innerHTML += `
+                        <div class="cgCommentReview">
+                            <svg id="icon" class="cgReviewIcon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                              <defs>
+                                <style>
+                                  .cls-1 {
+                                    fill: none;
+                                  }
+                                </style>
+                              </defs>
+                              <polygon points="17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16"/>
+                              <g id="_Transparent_Rectangle_" data-name="&amp;lt;Transparent Rectangle&amp;gt;">
+                                <rect class="cls-1" width="32" height="32"/>
+                              </g>
+                            </svg>
+                            <div class="commentReviewText">
+                                <p class="cgReviewTextFirstPar">Fake review</p>
+                                <div class="tooltip">
+                                    <p class="cgCommentReviewTextSecondPar">View details</p>
+                                    <span class="tooltiptext">
+                                        <p>${reviews[index].certainty ? `Certainty ${Math.round(reviews[index].certainty * 100)}%` : "Review details"}</p>
+                                        <p>${reviews[index].feedback_from_model ? reviews[index].feedback_from_model : "Missing feedback"}</p>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>`;
                 }
             });
-
-            injectClassAndStyle(styleToInject)
         }, [predictionResponse]);
 
     } catch (error) {
