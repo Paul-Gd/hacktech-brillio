@@ -50,6 +50,10 @@ body {
   font-size: 40px;
 }
 
+.na-score {
+  color: #ffffff;
+}
+
 .good-score {
     color: #89e746;
 }
