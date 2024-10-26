@@ -32,7 +32,7 @@ body {
   cursor: pointer;
 }
 
-#change-model {
+.change-model {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -85,4 +85,8 @@ body {
   font-weight: 500;
   color: #ffffff;
   font-size: 12px;
+}
+
+.hideElement {
+  display: none;
 }
