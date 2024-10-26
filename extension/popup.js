@@ -188,6 +188,33 @@ const stylesInjected = `
     font-family: sans-serif;
     margin-bottom: 0px;
 }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
 `;
 
 async function getDataFromWebsiteAndPopulateIt() {
@@ -367,6 +394,12 @@ async function getDataFromWebsiteAndPopulateIt() {
                             <div class="commentReviewText">
                                 <p class="commentReviewTextFirstPar">Valid review</p>
                                 <p class="commentReviewTextSecondPar">View details</p>
+                                <div class="tooltip">Hover over me
+                                    <span class="tooltiptext">
+                                        <p>t1</p>
+                                        <p>t2</p>
+                                    </span>
+                                   </div>
                             </div>
                         </div>`;
                 } else {
