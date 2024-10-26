@@ -1,9 +1,105 @@
 body {
-    font-family: Arial, sans-serif;
-    padding: 10px;
+  margin: 0;
 }
 
-#pageTitle {
-    font-size: 16px;
-    font-weight: bold;
+#extension-menu {
+  display: flex;
+  flex-direction: column;
+  width: 276px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background-color: #1e1e1e;
+}
+
+#top {
+  display: flex;
+  align-self: stretch;
+  justify-content: space-between;
+}
+
+#title {
+  font-family: "Inter-Medium", Helvetica, system-ui;
+  font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+#change-model {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.label {
+  font-family: "Inter-Regular", Helvetica, system-ui;
+  font-weight: 400;
+  color: #ffffff;
+}
+
+#score-container {
+  font-family: "Inter-Light", Helvetica, system-ui;
+  font-weight: 300;
+  text-align: center;
+  margin: 20px 0;
+}
+
+#score {
+  font-size: 40px;
+}
+
+.good-score {
+    color: #89e746;
+}
+
+.medium-score {
+  color: #e7e446;
+}
+
+.bad-score {
+  color: #e74646;
+}
+
+#score-max {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+#score-text {
+  font-family: "Inter-Regular", Helvetica, system-ui;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.checkbox-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+#summary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subtitle {
+  font-family: "Inter-Regular", Helvetica, system-ui;
+  font-weight: 500;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.summary-point {
+  color: #d7d7d7;
+  margin: 8px;
 }

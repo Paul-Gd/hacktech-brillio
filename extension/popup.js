@@ -1,5 +1,78 @@
-// // Initialize button with users' preferred color
-const changeColor = document.getElementById('changeColor');
+const dropdownBtn = document.getElementById("dropdown-toggle");
+const dropdownBtnText = document.getElementById("dropdown-toggle-text");
+const dropdownMenu = document.getElementById("dropdown");
+const toggleArrow = document.getElementById("arrow");
+
+const toggleDropdown = function () {
+  dropdownMenu.classList.toggle("show");
+  toggleArrow.classList.toggle("arrow");
+};
+
+dropdownBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  toggleDropdown();
+});
+
+document.documentElement.addEventListener("click", function () {
+  if (dropdownMenu.classList.contains("show")) {
+    toggleDropdown();
+  }
+});
+
+dropdownMenu.addEventListener("click", function (e) {
+    if (e.target && e.target.tagName === "LI") {
+        dropdownBtnText.textContent = e.target.textContent.trim();
+        toggleDropdown();
+      }
+});
+
+// Helper function to get the active tab using async/await
+async function getActiveTab() {
+    return new Promise((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
+            }
+            resolve(tabs[0]); // Return the active tab
+        });
+    });
+}
+
+// Helper function to execute a script in the tab using async/await
+async function executeScriptAsync(tabId, func) {
+    return new Promise((resolve, reject) => {
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: func
+        }, (results) => {
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
+            }
+            resolve(results);
+        });
+    });
+}
+
+// Function to retrieve the title of the current tab
+async function getTabTitle() {
+    try {
+        const tab = await getActiveTab();
+        const results = await executeScriptAsync(tab.id, () => document.title);
+
+        // // Update the popup with the title
+        // if (results && results[0] && results[0].result) {
+        //     document.getElementById('pageTitle').textContent = results[0].result;
+        // } else {
+        //     document.getElementById('pageTitle').textContent = 'Title not found';
+        // }
+    } catch (error) {
+        // console.error('Error retrieving title:', error);
+        // document.getElementById('pageTitle').textContent = 'Error retrieving title';
+    }
+}
+
+// Call the function when the popup is loaded
+document.addEventListener('DOMContentLoaded', getTabTitle);
 
 // Helper function to get the active tab using async/await
 async function getActiveTab() {
@@ -313,6 +386,3 @@ async function getDataFromWebsiteAndPopulateIt() {
 
 // Call the function when the popup is loaded
 document.addEventListener('DOMContentLoaded', getDataFromWebsiteAndPopulateIt);
-
-changeColor.addEventListener('click', getDataFromWebsiteAndPopulateIt);
-
