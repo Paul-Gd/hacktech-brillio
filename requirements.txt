@@ -6,7 +6,7 @@ gunicorn~=20.1.0
 joblib~=1.4.2
 scikit-learn~=1.5.2
 lime~=0.2.0.1
-torch~=2.5.0
+torch~=2.5.0+cpu
 #transformers~=4.46.0
 #openai api
 openai
