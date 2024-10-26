@@ -41,9 +41,9 @@ def explain_review(review):
     # Print the words that influenced the prediction
     print("\nInfluential Words:")
     influential_words = []
-    for word, weight in exp.as_list()[:10]:
+    for word, weight in exp.as_list():
         if weight > 0.0:
-            influential_words.append(f'{word}, {weight})')
+            influential_words.append(f'{word}, {weight}')
 
     #print(f"\nPredicted Label: {'CG' if prediction == 1 else 'OR'}")
     return prediction, "\n".join(influential_words)
