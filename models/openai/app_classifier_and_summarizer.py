@@ -5,7 +5,7 @@ import concurrent.futures
 client = OpenAI()
 
 # Step 1: Load JSON data from a file
-with open('message.json', 'r', encoding='utf-8') as file:
+with open('./message.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Step 2: Access the description
@@ -23,6 +23,7 @@ Product_Description = description
 
 # List to hold review results (non-fake reviews and all reviews)
 review_results = []
+
 
 def analyze_review(index, review):
     # Extract review text and rating
