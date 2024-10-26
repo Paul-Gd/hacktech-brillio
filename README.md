@@ -8,6 +8,7 @@
    ```
 2. Start FastApi server:
     ```bash
+   cd api
    python3 -m uvicorn main:app --reload
    ```
    
