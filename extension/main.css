@@ -1,0 +1,16 @@
+.label {
+  font-family: "Inter-Regular", Helvetica, system-ui;
+  font-weight: 400;
+  color: #ffffff;
+}
+
+.text {
+  color: #d7d7d7;
+  margin: 8px;
+}
+
+.checkbox-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

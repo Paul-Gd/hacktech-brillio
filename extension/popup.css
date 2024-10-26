@@ -39,12 +39,6 @@ body {
   align-self: stretch;
 }
 
-.label {
-  font-family: "Inter-Regular", Helvetica, system-ui;
-  font-weight: 400;
-  color: #ffffff;
-}
-
 #score-container {
   font-family: "Inter-Light", Helvetica, system-ui;
   font-weight: 300;
@@ -80,12 +74,6 @@ body {
   font-size: 14px;
 }
 
-.checkbox-container {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
 #summary-container {
   display: flex;
   flex-direction: column;
@@ -97,9 +85,4 @@ body {
   font-weight: 500;
   color: #ffffff;
   font-size: 12px;
-}
-
-.summary-point {
-  color: #d7d7d7;
-  margin: 8px;
 }
