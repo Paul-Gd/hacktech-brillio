@@ -44,7 +44,7 @@ def review_prediction(review_req: ProductReviewRequest) -> ReviewPredictionRespo
         from models.naive_bayes_lime import explain_review
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
-            is_computer_generated, influential_words = explain_review(review)
+            is_computer_generated, influential_words = explain_review(review.text)
             computed_reviews_by_model.append(
                 IndividualReviewResult(is_computer_generated=is_computer_generated,
                                        feedback_from_model=influential_words)
