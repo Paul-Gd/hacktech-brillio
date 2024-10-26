@@ -9,7 +9,7 @@ lime~=0.2.0.1
 --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
 torch==2.2.0
 --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-torchvision==0.15.2
+torchvision==0.1.6
 #torch~=2.5.0+cpu
 #transformers~=4.46.0
 #openai api
