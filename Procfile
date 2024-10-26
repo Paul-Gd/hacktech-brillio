@@ -1,1 +1,1 @@
-web: cd api && gunicorn -w 1 -k uvicorn.workers.UvicornWorker main:app
+web: cd api && gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app
