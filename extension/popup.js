@@ -208,26 +208,30 @@ const stylesInjected = `
     position: absolute;
     top: 0px;
     right: 0px;
-    border-radius: 0px 0px 0px 8px;
-    border: 1px solid #46BD72;
+    border-radius: 0px 3px 0px 8px;
+    border-bottom: 1px solid #46BD72;
+    border-left: 1px solid #46BD72;
     background: #E0FFEC;
     display: flex;
     padding: 10px 12px;
     align-items: center;
     gap: 8px;
 }
+
 .cgCommentReview{
     position: absolute;
     top: 0px;
     right: 0px;
-    border-radius: 0px 0px 0px 8px;
-    border: 1px solid #E22727;
+    border-radius: 0px 3px 0px 8px;
+    border-bottom: 1px solid #E22727;
+    border-left: 1px solid #E22727;
     background: #FFE0E0;
     display: flex;
     padding: 10px 12px;
     align-items: center;
     gap: 8px;
 }
+
 .validReviewIcon{
     padding: 4px;
     border-radius: 16px;
@@ -235,6 +239,7 @@ const stylesInjected = `
     width: 28px;
     height: 28px;
 }
+
 .cgReviewIcon{
     padding: 4px;
     border-radius: 16px;
@@ -242,6 +247,7 @@ const stylesInjected = `
     width: 28px;
     height: 28px;
 }
+
 .commentReviewText{
     display: flex;
     flex-direction: column;
@@ -260,6 +266,7 @@ const stylesInjected = `
     font-family: sans-serif;
     margin-bottom: 0px;
 }
+
 .cgReviewTextFirstPar{
     color: #881919;
     font-family: Inter;
@@ -270,6 +277,7 @@ const stylesInjected = `
     font-family: sans-serif;
     margin-bottom: 0px;
 }
+
 .validCommentReviewTextSecondPar{
     color: #198842;
     font-family: Inter;
@@ -280,6 +288,7 @@ const stylesInjected = `
     font-family: sans-serif;
     margin-bottom: 0px;
 }
+
 .cgCommentReviewTextSecondPar{
     color: #881919;
     font-family: Inter;
@@ -315,9 +324,14 @@ const stylesInjected = `
   margin-left: -221px; 
 }
 
+.tooltip:hover {
+  cursor: pointer;
+}
+
 .tooltip:hover .tooltiptext {
   visibility: visible;
 }
+
 .hideFakeReview{
   display: none;
 }
