@@ -17,9 +17,7 @@ async function getActiveTab() {
 async function executeScriptAsync(tabId, func, args) {
     return new Promise((resolve, reject) => {
         chrome.scripting.executeScript({
-            target: {tabId: tabId},
-            func: func,
-            args: args
+            target: {tabId: tabId}, func: func, args: args
         }, (results) => {
             if (chrome.runtime.lastError) {
                 return reject(chrome.runtime.lastError);
@@ -43,21 +41,9 @@ async function makePostRequest(extractedData) {
     };
 
     const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0',
+        method: 'POST', body: JSON.stringify(data), headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'DNT': '1',
-            'Origin': 'https://hacktech-brillio-e28a25e2835a.herokuapp.com',
-            'Referer': 'https://hacktech-brillio-e28a25e2835a.herokuapp.com/docs',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'Accept-Encoding': 'gzip, deflate, br, zstd',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
         },
     });
     if (!response.ok) {
@@ -67,8 +53,17 @@ async function makePostRequest(extractedData) {
     return await response.json();
 }
 
+const stylesInjected = `
+.fakeReviewClass {
+    border: 1px solid #E22727;
+    border-radius: 4px;
+}
 
-// Function to retrieve the title of the current tab
+.validReviewClass {
+    border: 1px solid #46BD72;
+    border-radius: 4px;
+}
+`;
 async function getDataFromWebsiteAndPopulateIt() {
     try {
         const tab = await getActiveTab();
@@ -123,8 +118,7 @@ async function getDataFromWebsiteAndPopulateIt() {
                     // Create review object and push it to the reviews array
                     if (reviewText && reviewValue) {
                         reviews.push({
-                            text: reviewText,
-                            review_value: reviewValue
+                            text: reviewText, review_value: reviewValue
                         });
                     }
                 });
@@ -149,6 +143,22 @@ async function getDataFromWebsiteAndPopulateIt() {
 
         const response = await makePostRequest(results[0].result);
         console.log("response from server", response);
+        await executeScriptAsync(tab.id, (styleToInject) => {
+            // Inject CSS class into the page
+            function injectClassAndStyle(style) {
+                const targetElement = document.body; // Modify the selector as needed
+
+                // Add a new class to the element
+                targetElement.classList.add('injectedClass');
+
+                // Inject the style for that class
+                const styleElement = document.createElement('style');
+                styleElement.innerHTML = style;
+                document.head.appendChild(styleElement);
+            }
+
+            injectClassAndStyle(styleToInject)
+        }, [stylesInjected]);
     } catch (error) {
         console.error('Error retrieving title:', error);
         document.getElementById('pageTitle').textContent = 'Error retrieving title';
