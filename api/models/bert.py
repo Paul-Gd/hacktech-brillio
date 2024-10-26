@@ -43,33 +43,44 @@ def prediction(text_instance, model, tokenizer, device=None, max_length=512, num
     if device is None:
         device = torch.device('mps')
     
-    # Initialize the LIME text explainer
-    explainer = LimeTextExplainer(class_names=["False", "True"])
-
-    # def lime_predict(texts):
-    #     return predict_proba(texts, model, tokenizer, device, max_length)
-
-    # Generate explanation for the provided text instance
-    # exp = explainer.explain_instance(
-    #     text_instance,
-    #     lime_predict,
-    #     num_features=num_features,  # Number of features to explain
-    #     labels=[1]  # Labels to explain (e.g., label 1 corresponds to True)
-    # )
+    # Tokenize input text
+    inputs = tokenizer(text_instance, return_tensors="pt", truncation=True, max_length=max_length)
+    if device:
+        model.to(device)
+        inputs = {k: v.to(device) for k, v in inputs.items()}
     
-    proba = predict_proba([text_instance], model, tokenizer, device, max_length)
-    predicted_label = bool(np.argmax(proba))  # Convert prediction to a boolean
-    certainty = float(np.max(proba))  # Extract the highest probability value as certainty
+    # Get embeddings with requires_grad=True
+    model.eval()
+    embeddings = model.get_input_embeddings()(inputs["input_ids"])
+    embeddings.retain_grad()  # Keep track of gradients on the embeddings
+    
+    # Forward pass with embeddings
+    outputs = model(inputs_embeds=embeddings)
+    logits = outputs.logits
 
-    # explanation_key_value = {word: score for word, score in exp.as_list(label=1)}
+    # Get predicted label and certainty
+    proba = torch.nn.functional.softmax(logits, dim=-1)
+    predicted_label = proba.argmax().item()
+    certainty = float(proba.max().item())
+
+    # Backward pass to compute gradients w.r.t. embeddings
+    proba[0, predicted_label].backward()  # Compute gradients for the predicted class
+    
+    # Interpret gradients to determine influence
+    gradients = embeddings.grad[0].cpu().numpy()
+    explanation = {}
+
+    for token_id, grad in zip(inputs["input_ids"][0], gradients):
+        word = tokenizer.decode([token_id])
+        grad_score = np.mean(grad)  # Aggregate gradient scores for each token
+        explanation[word] = float(grad_score)  # Positive for supporting, negative for counteracting
 
     explanation_data = {
         "text": text_instance,
-        "predicted_label": predicted_label,
+        "predicted_label": bool(predicted_label),
         "certainty": certainty,
-        # "explanation": explanation_key_value  # Explanation as a dictionary
+        "explanation": explanation  # Combined positive and negative influences
     }
 
-    explanation_json = explanation_data
+    return explanation_data
 
-    return explanation_json

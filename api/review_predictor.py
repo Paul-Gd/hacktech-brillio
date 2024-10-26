@@ -2,8 +2,6 @@ from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel, Field
 
 from models.model_types import PredictionModels
-from fastapi.responses import JSONResponse
-import json
 
 review_prediction_router = APIRouter()
 
@@ -81,14 +79,14 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
         from models.bert import prediction
         computed_reviews_by_model = []
         for review in review_req.user_reviews:
-            explanation = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
+            response = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
                                             num_features=len(review.text.split(' ')))
             
             computed_reviews_by_model.append(
                 IndividualReviewResult(
-                    is_computer_generated=explanation["predicted_label"],
-                    feedback_from_model=None,
-                    certainty=explanation.get("certainty")
+                    is_computer_generated=response.get('predicted_label'),
+                    feedback_from_model=response.get('explanation'),
+                    certainty=response.get("certainty")
                 )
             )
 
