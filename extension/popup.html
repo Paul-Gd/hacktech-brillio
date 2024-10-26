@@ -24,27 +24,34 @@
             <img id="arrow" class="icon" src="svg/chevron--down.svg" />
           </button>
           <ul class="dropdown" id="dropdown">
-            <li class="dropdown-option">
-              Naive Bayes
-            </li>
-            <li class="dropdown-option">
-              BERT
-            </li>
-            <li class="dropdown-option">
-              Neural Network
-            </li>
-            <li class="dropdown-option">
-              Random Forest
-            </li>
-            <li class="dropdown-option">
-              GPT-4o
-            </li>
-          </ul>
+              <li class="dropdown-option" data-value="naive_bayes">
+                Naive Bayes
+              </li>
+              <li class="dropdown-option" data-value="bert">
+                BERT
+              </li>
+              <li class="dropdown-option" data-value="neural_network">
+                Neural Network
+              </li>
+              <li class="dropdown-option" data-value="random_forest">
+                Random Forest
+              </li>
+              <li class="dropdown-option" data-value="gpt_4">
+                GPT-4
+              </li>
+              <li class="dropdown-option" data-value="gpt_4_advanced">
+                GPT-4 Advanced
+              </li>
+              <li class="dropdown-option" data-value="random">
+                Random
+              </li>
+        </ul>
+
         </div>
       </div>
       <div id="score-container">
         <div>
-          <span id="score" class="good-score">7.5</span>
+          <span id="score" class="good-score">Na</span>
           <span id="score-max">/10</span>
         </div>
         <div id="score-text">Total trust score</div>
@@ -60,7 +67,7 @@
         <div class="subtitle">Summary</div>
         <div>
           <p class="text" id="summary-point">
-            There are many similar reviews with minor differences
+            No summary available
           </p>
         </div>
       </div>

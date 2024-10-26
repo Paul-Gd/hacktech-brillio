@@ -6,6 +6,7 @@ const score = document.getElementById("score")
 const summary = document.getElementById("summary-point")
 const hideFakeReviews = document.getElementById("hideFakeReviews")
 const hideModelNameEl = document.getElementById('change-model');
+let model = "naive_bayes"
 
 const toggleDropdown = function () {
     dropdownMenu.classList.toggle("show");
@@ -30,12 +31,42 @@ hideFakeReviews.addEventListener('change', async function () {
     }, [this.checked]);
 });
 
+async function removeElementsAddedByExtension() {
+    const tab = await getActiveTab();
+    await executeScriptAsync(tab.id, (styleToInject) => {
+        document.querySelectorAll('.validCommentReview').forEach(function (element) {
+            element.remove();
+        });
+        document.querySelectorAll('.cgCommentReview').forEach(function (element) {
+            element.remove();
+        });
+        document.querySelectorAll('.fakeReviewClass').forEach(function (element) {
+            element.classList.remove('fakeReviewClass');
+        });
+        document.querySelectorAll('.validReviewClass').forEach(function (element) {
+            element.classList.remove('validReviewClass');
+        });
+        console.log("removing elements added by extension");
+    }, []);
+}
+
+document.querySelectorAll('.dropdown-option').forEach(function (item) {
+    item.addEventListener('click', async function () {
+        const selectedValue = this.getAttribute('data-value');
+        console.log(`Selected option value: ${selectedValue}`);
+        model = selectedValue;
+
+        await removeElementsAddedByExtension();
+        await getDataFromWebsiteAndPopulateIt()
+    });
+});
+
+
 // Retrieve the stored value on load
-chrome.storage.sync.get('hideModelName', ({ hideModelName }) => {
-    if(hideModelName || false){
+chrome.storage.sync.get('hideModelName', ({hideModelName}) => {
+    if (hideModelName || false) {
         hideModelNameEl.classList.add("hideElement");
-    }
-    else{
+    } else {
         hideModelNameEl.classList.remove("hideElement");
     }
     console.log("hideModelName retrieved:", hideModelName);
@@ -75,8 +106,7 @@ async function getActiveTab() {
 async function executeScriptAsync(tabId, func) {
     return new Promise((resolve, reject) => {
         chrome.scripting.executeScript({
-            target: {tabId: tabId},
-            func: func
+            target: {tabId: tabId}, func: func
         }, (results) => {
             if (chrome.runtime.lastError) {
                 return reject(chrome.runtime.lastError);
@@ -142,14 +172,14 @@ async function makePostRequest(extractedData) {
         description: extractedData.description,
         specs: extractedData.specs,
         user_reviews: extractedData.user_reviews,
-        prediction_model: "random",
+        prediction_model: model,
         page_url: "string"
     };
+    console.log("data to send", data);
 
     const response = await fetch(url, {
         method: 'POST', body: JSON.stringify(data), headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+            'Accept': 'application/json', 'Content-Type': 'application/json',
         },
     });
     if (!response.ok) {
@@ -294,6 +324,11 @@ const stylesInjected = `
 `;
 
 function displayScoreAndSummaryInExtension(predictionResponse) {
+    if (!predictionResponse.aggregated_review_data ||
+        !predictionResponse.aggregated_review_data.adjusted_review_score ||
+        !predictionResponse.aggregated_review_data.feedback_from_model) {
+        return;
+    }
     score.textContent = (predictionResponse.aggregated_review_data.adjusted_review_score * 10).toFixed(1);
     summary.textContent = predictionResponse.aggregated_review_data.feedback_from_model;
     console.log("score", predictionResponse.aggregated_review_data.adjusted_review_score * 10);
@@ -387,65 +422,8 @@ async function getDataFromWebsiteAndPopulateIt() {
             // document.getElementById('pageTitle').textContent = 'Failed to load reviews';
         }
 
-        // const predictionResponse = await makePostRequest(results[0].result);
-        const predictionResponse = {
-            "reviews": [
-                {
-                    "is_computer_generated": false,
-                    "feedback_from_model": "grape",
-                    "certainty": 0.6
-                },
-                {
-                    "is_computer_generated": false,
-                    "feedback_from_model": "orange",
-                    "certainty": 0.8
-                },
-                {
-                    "is_computer_generated": true,
-                    "feedback_from_model": "grape",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": true,
-                    "feedback_from_model": "watermelon",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": false,
-                    "feedback_from_model": "blueberry",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": true,
-                    "feedback_from_model": "orange",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": true,
-                    "feedback_from_model": "grape",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": false,
-                    "feedback_from_model": "grape",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": true,
-                    "feedback_from_model": "mango",
-                    "certainty": null
-                },
-                {
-                    "is_computer_generated": false,
-                    "feedback_from_model": "mango",
-                    "certainty": null
-                }
-            ],
-            "aggregated_review_data": {
-                "adjusted_review_score": 0.22,
-                "feedback_from_model": "da das das da ds asd a ds asd a dasd a d"
-            }
-        }
+        const predictionResponse = await makePostRequest(results[0].result);
+
         console.log("response from server", predictionResponse);
 
         // Inject the CSS class into the page
