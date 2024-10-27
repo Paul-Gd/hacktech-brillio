@@ -122,11 +122,10 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
 
         # Calculate aggregated review data
         adjusted_review_score = total_certainty / len(computed_reviews_by_model) if computed_reviews_by_model else None
-        aggregated_feedback = "<br />".join(positive_feedback) if positive_feedback else None
 
         aggregated_review_data = AggregatedReviewResults(
             adjusted_review_score=adjusted_review_score,
-            feedback_from_model=aggregated_feedback
+            feedback_from_model=None
         )
 
         return ReviewPredictionResponse(
