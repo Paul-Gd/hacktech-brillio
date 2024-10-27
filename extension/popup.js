@@ -374,7 +374,7 @@ function displayScoreAndSummaryInExtension(predictionResponse) {
         !predictionResponse.aggregated_review_data.adjusted_review_score ||
         !predictionResponse.aggregated_review_data.feedback_from_model) {
         score.className = "na-score";
-        summary.textContent = "This model does not provide a total score or an overall summary.";
+        summary.textContent = "This model does not include a general summary.";
 
         return;
     }

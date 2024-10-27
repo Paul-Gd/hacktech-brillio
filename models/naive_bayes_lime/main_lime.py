@@ -31,6 +31,22 @@ def predict_review(review):
 
     return prediction[0]  # Return only the prediction label
 
+def sum_weights(explainer):
+    sum = 0
+    for _, weight in explainer.as_list():
+        if weight > 0.0:
+            sum += weight
+    return sum
+
+def normalize_weight(weight, sum):
+    return (weight / sum) * 100
+
+
+def format_influential_words(influential_words):
+    contributions = ', '.join([f"{word} ({percentage:.2f}%)" for word, percentage in influential_words])
+    result_string = f"The review was labeled based on these words, with each percentage indicating its contribution to the decision: {contributions}."
+    return result_string
+
 # Function to explain predictions using LIME
 def explain_review(review):
     # Predict label
@@ -46,19 +62,17 @@ def explain_review(review):
         num_features=10  # Number of features to show in the explanation
     )
 
-    # Print the words that influenced the prediction
-    print("\nInfluential Words:")
     influential_words = []
+    sum = sum_weights(exp)
     for word, weight in exp.as_list():
         if weight > 0.0:
-            influential_words.append((word, weight))
+            normalized_weight = normalize_weight(weight, sum)
+            influential_words.append((str(word), normalized_weight))
+    influental_words_string = format_influential_words(influential_words)
+    return prediction, influental_words_string
 
-    #print(f"\nPredicted Label: {'CG' if prediction == 1 else 'OR'}")
-    return prediction, influential_words
-
-# # Example usage
 # if __name__ == "__main__":
 #     new_review = "I loved the service and the staff was very friendly!"
-#     pred, influential_words = explain_review(new_review)
-#     print(influential_words)
+#     prediction, influental_words_string = explain_review(new_review)
+#     print(influental_words_string)
 
