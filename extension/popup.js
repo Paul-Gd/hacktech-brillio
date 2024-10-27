@@ -350,7 +350,7 @@ const stylesInjected = `
 
   /* Position the tooltip */
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   top: 26px;
   left: 50%;
   margin-left: -221px; 
@@ -394,6 +394,7 @@ function displayScoreAndSummaryInExtension(predictionResponse) {
 
 async function getDataFromWebsiteAndPopulateIt() {
     try {
+        await removeElementsAddedByExtension();
         const tab = await getActiveTab();
         const results = await executeScriptAsync(tab.id, () => {
             // Function to extract product information from amazon.
