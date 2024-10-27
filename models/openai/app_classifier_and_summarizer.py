@@ -24,7 +24,6 @@ Product_Description = description
 # List to hold review results (non-fake reviews and all reviews)
 review_results = []
 
-
 def analyze_review(index, review):
     # Extract review text and rating
     review_text = review['review_text']

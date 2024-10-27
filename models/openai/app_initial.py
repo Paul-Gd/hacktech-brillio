@@ -10,19 +10,12 @@ with open('message.json', 'r', encoding='utf-8') as file:
 
 # Step 2: Access the description
 description = data['description']
-print("Description:", description)
 
 # Step 3: Access the reviews
 reviews = data['reviews']
-for review in reviews:
-    print("\nReview:", review['review_text'])
-    print("Rating:", review['review_value'])
 
 # Step 4: Access the specs
 specs = data['specs']
-print("\nManufacturer:", specs['Manufacturer'])
-print("Battery Power Rating:", specs['Battery Power Rating'])
-print("Camera Specs:", specs['Other camera features'])
 
 # Define variables for the request
 Product_Specs = specs
@@ -73,11 +66,6 @@ def analyze_review(index, review):
         file_name = f"review_analysis_{index + 1}.json"
         with open(file_name, "w", encoding="utf-8") as output_file:
             json.dump(response_content, output_file, indent=4)  # Save response content only
-
-        # Optional: print the output for each review
-        print("\nReview:", review_text)
-        print("Rating:", review_rating)
-        print("\n### LLM Response:", response_content)
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON for review {index + 1}: {e}")
