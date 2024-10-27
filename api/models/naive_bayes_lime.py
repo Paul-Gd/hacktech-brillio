@@ -34,7 +34,7 @@ def normalize_weight(weight, sum):
     return (weight / sum) * 100
 
 def format_influential_words(influential_words):
-    contributions = '<br>'.join([f"<br>{word} ({percentage:.2f}%)" for word, percentage in influential_words])
+    contributions = '<br>'.join([f"{word} ({percentage:.2f}%)" for word, percentage in influential_words])
     result_string = f"The review was labeled based on these words, with each percentage indicating its contribution to the decision: {contributions}."
     return result_string
 
