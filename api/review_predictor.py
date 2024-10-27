@@ -108,7 +108,7 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
         reviews = [review.text for review in review_req.user_reviews]
 
         # Process reviews in batches of 10
-        for review_batch in batched(reviews, 10):
+        for review_batch in batched(reviews, 5):
             responses = prediction(review_batch, bert_model, bert_tokenizer, device='cpu', num_features=10)
 
             for response in responses:
