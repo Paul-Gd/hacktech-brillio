@@ -87,19 +87,20 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
                                         aggregated_review_data=aggregated_review_data)
 
     elif review_req.prediction_model == PredictionModels.BERT:
-        # Access the preloaded BERT model and tokenizer from app state
         bert_model = request.app.state.bert_model
         bert_tokenizer = request.app.state.bert_tokenizer
 
         if bert_model is None or bert_tokenizer is None:
             raise HTTPException(status_code=500, detail="Model not loaded. Please try again later.")
 
-        # Use the preloaded model and tokenizer
         from models.bert import prediction
         computed_reviews_by_model = []
+        total_certainty = 0.0
+        positive_feedback = []
+
         for review in review_req.user_reviews:
             response = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
-                                  num_features=len(review.text.split(' ')))
+                                num_features=len(review.text.split(' ')))
 
             computed_reviews_by_model.append(
                 IndividualReviewResult(
@@ -109,6 +110,22 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
                 )
             )
 
-        return ReviewPredictionResponse(reviews=computed_reviews_by_model)
+            total_certainty += response.get("certainty", 0.0)
+            
+            if response.get("predicted_label"):
+                positive_feedback.append(response.get("explanation"))
+
+        adjusted_review_score = total_certainty / len(computed_reviews_by_model) if computed_reviews_by_model else None
+        # aggregated_feedback = ", ".join(positive_feedback) if positive_feedback else None
+
+        aggregated_review_data = AggregatedReviewResults(
+            adjusted_review_score=adjusted_review_score,
+            feedback_from_model=None
+        )
+
+        return ReviewPredictionResponse(
+            reviews=computed_reviews_by_model,
+            aggregated_review_data=aggregated_review_data
+        )
 
     return ReviewPredictionResponse(reviews=[])
