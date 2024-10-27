@@ -2,9 +2,14 @@ from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel, Field
 
 from models.model_types import PredictionModels
+from itertools import islice
 
 review_prediction_router = APIRouter()
 
+def batched(iterable, n):
+    it = iter(iterable)
+    while batch := list(islice(it, n)):
+        yield batch
 
 class ProductReview(BaseModel):
     text: str = Field(title="The review text")
@@ -101,37 +106,40 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
 
         # Prepare the list of reviews for batch prediction
         reviews = [review.text for review in review_req.user_reviews]
-        responses = prediction(reviews, bert_model, bert_tokenizer, device='cpu', num_features=10)
 
-        for response in responses:
-            # Append each review result to computed_reviews_by_model
-            computed_reviews_by_model.append(
-                IndividualReviewResult(
-                    is_computer_generated=response.get('predicted_label'),
-                    feedback_from_model=response.get('explanation'),
-                    certainty=response.get("certainty")
+        # Process reviews in batches of 10
+        for review_batch in batched(reviews, 10):
+            responses = prediction(review_batch, bert_model, bert_tokenizer, device='cpu', num_features=10)
+
+            for response in responses:
+                # Append each review result to computed_reviews_by_model
+                computed_reviews_by_model.append(
+                    IndividualReviewResult(
+                        is_computer_generated=response.get('predicted_label'),
+                        feedback_from_model=response.get('explanation'),
+                        certainty=response.get("certainty")
+                    )
                 )
-            )
 
-            # Accumulate certainty for adjusted score calculation
-            total_certainty += response.get("certainty", 0.0)
-            
-            # Collect positive feedback explanation summaries for aggregation
-            if response.get("predicted_label"):
-                positive_feedback.append(response.get("explanation"))
+                # Accumulate certainty for adjusted score calculation
+                total_certainty += response.get("certainty", 0.0)
+                
+                # Collect positive feedback explanation summaries for aggregation
+                if response.get("predicted_label"):
+                    positive_feedback.append(response.get("explanation"))
 
         # Calculate aggregated review data
         adjusted_review_score = total_certainty / len(computed_reviews_by_model) if computed_reviews_by_model else None
+        aggregated_feedback = "<br />".join(positive_feedback) if positive_feedback else None
 
         aggregated_review_data = AggregatedReviewResults(
             adjusted_review_score=adjusted_review_score,
-            feedback_from_model=None
+            feedback_from_model=aggregated_feedback
         )
 
         return ReviewPredictionResponse(
             reviews=computed_reviews_by_model,
             aggregated_review_data=aggregated_review_data
         )
-
 
     return ReviewPredictionResponse(reviews=[])
