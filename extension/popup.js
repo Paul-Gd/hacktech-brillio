@@ -1,3 +1,4 @@
+const closeIcon = document.getElementById("close-icon");
 const dropdownToggle = document.getElementById("dropdown-toggle");
 const dropdownToggleButton = document.getElementById("dropdown-toggle-text");
 const dropdownMenu = document.getElementById("dropdown");
@@ -94,6 +95,10 @@ dropdownMenu.addEventListener("click", function (e) {
         dropdownToggleButton.textContent = e.target.textContent.trim();
         toggleDropdown();
     }
+});
+
+closeIcon.addEventListener("click", function () {
+  window.close();
 });
 
 // Helper function to get the active tab using async/await
