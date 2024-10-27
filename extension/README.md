@@ -1,7 +1,6 @@
 ## Research
 
--
-Source: https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.getting-started
+- Source: https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/tutorial.getting-started
 - Tutorial 1: https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world
 - Tutorial 2: https://davidts.hashnode.dev/how-to-build-a-chrome-extension-that-makes-api-calls
 
