@@ -98,7 +98,7 @@ def prediction(text_instance, model, tokenizer, device=None, max_length=512, num
         word: (score / total_positive) * 100 for word, score in positive_influence.items()
     }
     
-    summary = "The review was labeled based on these words, with each percentage indicating its contribution to the decision: " + ", ".join(f"{word} ({percentage:.0f}%)" for word, percentage in contribution_percentages.items()) + "."
+    summary = "The review was labeled based on these words, with each percentage indicating its contribution to the decision: <br />" + "<br />".join(f"{word} ({percentage:.0f}%)" for word, percentage in contribution_percentages.items())
 
     explanation_data = {
         "text": text_instance,
