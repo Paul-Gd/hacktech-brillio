@@ -9,7 +9,7 @@ const score = document.getElementById("score")
 const summary = document.getElementById("summary-point")
 const hideFakeReviews = document.getElementById("hideFakeReviews")
 const hideModelNameEl = document.getElementById('change-model');
-let model = "gpt_4o_mini"
+let model = "gpt-4o-mini"
 let isFetching = false;
 
 const toggleDropdown = function () {
