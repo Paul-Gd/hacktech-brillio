@@ -394,6 +394,7 @@ function displayScoreAndSummaryInExtension(predictionResponse) {
 
 async function getDataFromWebsiteAndPopulateIt() {
     try {
+        await removeElementsAddedByExtension();
         const tab = await getActiveTab();
         const results = await executeScriptAsync(tab.id, () => {
             // Function to extract product information from amazon.
