@@ -66,7 +66,7 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
                 )
             )
         return ReviewPredictionResponse(reviews=computed_reviews_by_model)
-    elif review_req.prediction_model == PredictionModels.GPT_4:
+    elif review_req.prediction_model == PredictionModels.GPT_4o or review_req.prediction_model == PredictionModels.GPT_4o_mini:
         from models.gpt_4 import analyze_and_sumarize_gpt
 
         summary_and_rating_data = analyze_and_sumarize_gpt(review_req)

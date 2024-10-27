@@ -18,7 +18,7 @@ def analyze_and_sumarize_gpt(data):
     review_results = []
     # Use ThreadPoolExecutor to parallelize the review analysis
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = {executor.submit(analyze_review, specs, description, index, review): index for index, review in
+        futures = {executor.submit(analyze_review, specs, description, index, review, data.prediction_model.value): index for index, review in
                    enumerate(reviews)}
 
         # Wait for the futures to complete and handle exceptions if any
@@ -50,7 +50,7 @@ def analyze_and_sumarize_gpt(data):
     summary_user_prompt = "Here are the reviews:\n\n" + "\n".join(non_fake_reviews)
     # Create the summary completion request with separate system and user prompts
     summary_completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=data.prediction_model.value,
         messages=[
             {"role": "system", "content": summary_system_prompt},
             {"role": "user", "content": summary_user_prompt}
@@ -66,7 +66,7 @@ def analyze_and_sumarize_gpt(data):
     }
 
 
-def analyze_review(specs, description, index, review):
+def analyze_review(specs, description, index, review, model):
     # Extract review text and rating
     review_text = review.text
     review_rating = review.review_value
@@ -93,7 +93,7 @@ def analyze_review(specs, description, index, review):
 
     # Create the completion request for each review with system and user prompts
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=model,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
