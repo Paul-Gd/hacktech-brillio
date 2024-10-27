@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="popup.css"/>
     <link rel="stylesheet" href="switch.css"/>
     <link rel="stylesheet" href="dropdown.css"/>
+    <link rel="stylesheet" href="preloader.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -46,30 +47,40 @@
                 Random
               </li>
         </ul>
-
         </div>
       </div>
-      <div id="score-container">
-        <div>
-          <span id="score" class="na-score">N.A.</span>
-          <span id="score-max">/10</span>
+      <div id="preloader-container">
+        <div class="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
         </div>
-        <div id="score-text">Total trust score</div>
+        <p class="text">Please wait while the reviews are being analyzed...</p>
       </div>
-      <div class="checkbox-container">
-        <div class="label">Hide fake reviews</div>
-        <label class="switch">
-          <input type="checkbox" id="hideFakeReviews">
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <div id="summary-container">
-        <div class="subtitle">Summary</div>
-        <div>
-          <p class="text" id="summary-point">
-            No summary available
-          </p>
-        </div>
+      <div id="score-and-summary-container" class="hidden-item">
+        <div id="score-container">
+            <div>
+              <span id="score" class="na-score">N.A.</span>
+              <span id="score-max">/10</span>
+            </div>
+            <div id="score-text">Total trust score</div>
+          </div>
+          <div class="checkbox-container">
+            <div class="label">Hide fake reviews</div>
+            <label class="switch">
+              <input type="checkbox" id="hideFakeReviews">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div id="summary-container">
+            <div class="subtitle">Summary</div>
+            <div>
+              <p class="text" id="summary-point">
+                No summary available
+              </p>
+            </div>
+          </div>
       </div>
     </div>
     <script src="popup.js"></script>

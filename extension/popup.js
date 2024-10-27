@@ -1,12 +1,15 @@
-const dropdownBtn = document.getElementById("dropdown-toggle");
-const dropdownBtnText = document.getElementById("dropdown-toggle-text");
+const dropdownToggle = document.getElementById("dropdown-toggle");
+const dropdownToggleButton = document.getElementById("dropdown-toggle-text");
 const dropdownMenu = document.getElementById("dropdown");
 const toggleArrow = document.getElementById("arrow");
+const preloaderContainer = document.getElementById('preloader-container');
+const scoreAndSummaryContainer = document.getElementById('score-and-summary-container');
 const score = document.getElementById("score")
 const summary = document.getElementById("summary-point")
 const hideFakeReviews = document.getElementById("hideFakeReviews")
 const hideModelNameEl = document.getElementById('change-model');
 let model = "naive_bayes"
+let isFetching = false;
 
 const toggleDropdown = function () {
     dropdownMenu.classList.toggle("show");
@@ -65,16 +68,19 @@ document.querySelectorAll('.dropdown-option').forEach(function (item) {
 // Retrieve the stored value on load
 chrome.storage.sync.get('hideModelName', ({hideModelName}) => {
     if (hideModelName || false) {
-        hideModelNameEl.classList.add("hideElement");
+        hideModelNameEl.classList.add("hidden-item");
     } else {
-        hideModelNameEl.classList.remove("hideElement");
+        hideModelNameEl.classList.remove("hidden-item");
     }
     console.log("hideModelName retrieved:", hideModelName);
 });
 
-dropdownBtn.addEventListener("click", function (e) {
+dropdownToggle.addEventListener("click", function (e) {
     e.stopPropagation();
-    toggleDropdown();
+
+    if( !isFetching) {
+        toggleDropdown();
+    }
 });
 
 document.documentElement.addEventListener("click", function () {
@@ -85,7 +91,7 @@ document.documentElement.addEventListener("click", function () {
 
 dropdownMenu.addEventListener("click", function (e) {
     if (e.target && e.target.tagName === "LI") {
-        dropdownBtnText.textContent = e.target.textContent.trim();
+        dropdownToggleButton.textContent = e.target.textContent.trim();
         toggleDropdown();
     }
 });
@@ -163,6 +169,22 @@ async function executeScriptAsync(tabId, func, args) {
     });
 }
 
+const addFetchingState = () => {
+    isFetching = true;
+    dropdownToggle.className = 'disabled-cursor';
+    toggleArrow.classList.add('disabled-cursor');
+    preloaderContainer.className = '';
+    scoreAndSummaryContainer.className = 'hidden-item';
+}
+
+const removeFetchingState = () => {
+    isFetching = false;
+    dropdownToggle.className = '';
+    toggleArrow.classList.remove('disabled-cursor');
+    preloaderContainer.className = 'hidden-item';
+    scoreAndSummaryContainer.className = '';
+}
+
 const APP_HOST = 'https://hacktech-brillio-e28a25e2835a.herokuapp.com';
 
 async function makePostRequest(extractedData) {
@@ -177,11 +199,16 @@ async function makePostRequest(extractedData) {
     };
     console.log("data to send", data);
 
+    addFetchingState();
+
     const response = await fetch(url, {
         method: 'POST', body: JSON.stringify(data), headers: {
             'Accept': 'application/json', 'Content-Type': 'application/json',
         },
     });
+
+    removeFetchingState();
+
     if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -342,7 +369,7 @@ function displayScoreAndSummaryInExtension(predictionResponse) {
         !predictionResponse.aggregated_review_data.adjusted_review_score ||
         !predictionResponse.aggregated_review_data.feedback_from_model) {
         score.className = "na-score";
-        summary.textContent = "This model does not provide an overall summary.";
+        summary.textContent = "This model does not provide a total score or an overall summary.";
 
         return;
     }

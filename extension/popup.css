@@ -38,6 +38,12 @@ body {
   align-self: stretch;
 }
 
+#score-and-summary-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 #score-container {
   font-family: "Inter-Light", Helvetica, system-ui;
   font-weight: 300;
@@ -90,6 +96,10 @@ body {
   font-size: 12px;
 }
 
-.hideElement {
-  display: none;
+.disabled-cursor {
+  cursor: not-allowed !important;
+}
+
+.hidden-item {
+  display: none !important;
 }
