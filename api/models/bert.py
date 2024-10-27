@@ -116,5 +116,7 @@ def prediction(text_instances, model, tokenizer, device=None, max_length=512, nu
             "certainty": certainty,
             "explanation": summary
         })
+    model.zero_grad()  # Clear gradients for the model
+    embeddings.grad = None  # Remove gradient history from embeddings
 
     return results
