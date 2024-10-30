@@ -1,25 +1,25 @@
+import functools
 import json
 from openai import OpenAI
 import concurrent.futures
 
+
 client = OpenAI()
 
-def analyze_and_sumarize_gpt(data):
-    # Step 2: Access the description
-    description = data.description
 
-    # Step 3: Access the reviews
-    reviews = data.user_reviews
-
-    # Step 4: Access the specs
-    specs = data.specs
-
+@functools.lru_cache(maxsize=32)
+def analyze_and_sumarize_gpt(description, reviews, specs, model):
+    specs=dict(specs)
+    reviews = [dict(review) for review in reviews]
     # List to hold review results (non-fake reviews and all reviews)
     review_results = []
+
     # Use ThreadPoolExecutor to parallelize the review analysis
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = {executor.submit(analyze_review, specs, description, index, review, data.prediction_model.value): index for index, review in
-                   enumerate(reviews)}
+        futures = {
+            executor.submit(analyze_review, specs, description, index, review, model): index
+            for index, review in enumerate(reviews)
+        }
 
         # Wait for the futures to complete and handle exceptions if any
         for future in concurrent.futures.as_completed(futures):
@@ -29,36 +29,43 @@ def analyze_and_sumarize_gpt(data):
                 review_results.append(result)  # This will also raise exceptions if any occurred in the thread
             except Exception as exc:
                 print(f'Review {index + 1} generated an exception: {exc}')
-    # Sort the reviews based on the original index as threadpool execute them in random order
-    review_results= sorted(review_results, key=lambda x: x['index'])
-    # Step 5: Generate a summary using OpenAI API for non-fake reviews
-    # Filter the non-fake reviews for summary generation
-    non_fake_reviews = [f"Review {i + 1}: {review['review_text']} (Confidence: {review['confidence']})"
-                        for i, review in enumerate(review_results) if review['label'] == "No"]
+
+    # Sort the reviews based on the original index as threadpool executes them in random order
+    review_results = sorted(review_results, key=lambda x: x['index'])
+
+    # Generate a summary using OpenAI API for non-fake reviews
+    non_fake_reviews = [
+        f"Review {i + 1}: {review['review_text']} (Confidence: {review['confidence']})"
+        for i, review in enumerate(review_results) if review['label'] == "No"
+    ]
+
     # Calculate the confidence as the ratio of non-fake reviews
     total_reviews = len(review_results)
     non_fake_count = sum(1 for review in review_results if review['label'] == "No")
     trust_ratio = non_fake_count / total_reviews if total_reviews > 0 else 0
-    # Define the system and user prompts for summary generation
+
+    # Define system and user prompts for summary generation
     summary_system_prompt = (
         "You are a helpful assistant that provides summaries of product reviews. "
         "Generate a concise summary of genuine customer reviews, focusing on their main points, "
         "highlighting common praises, criticisms, and themes if they appear across reviews. "
         "This summary should not exceed 200 words."
     )
-    # User prompt with the actual reviews to summarize
     summary_user_prompt = "Here are the reviews:\n\n" + "\n".join(non_fake_reviews)
+
     # Create the summary completion request with separate system and user prompts
     summary_completion = client.chat.completions.create(
-        model=data.prediction_model.value,
+        model=model,
         messages=[
             {"role": "system", "content": summary_system_prompt},
             {"role": "user", "content": summary_user_prompt}
         ]
     )
+
     # Extract the summary text
     summary_text = summary_completion.choices[0].message.content
-    # return the data
+
+    # Return the processed data
     return {
         "reviews": review_results,
         "adjusted_review_score": trust_ratio,
@@ -68,10 +75,10 @@ def analyze_and_sumarize_gpt(data):
 
 def analyze_review(specs, description, index, review, model):
     # Extract review text and rating
-    review_text = review.text
-    review_rating = review.review_value
+    review_text = review["text"]
+    review_rating = review["review_value"]
 
-    # results of the review
+    # Results of the review
     review_results = []
 
     # System prompt defining the assistant's role and response format
@@ -123,10 +130,9 @@ def analyze_review(specs, description, index, review, model):
             "index": index
         })
 
-        return review_results;
+        return review_results
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON for review {index + 1}: {e}")
         print("Raw response content:", completion.choices[0].message.content)
-        raise e;
-
+        raise e

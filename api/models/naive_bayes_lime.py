@@ -1,6 +1,6 @@
-
 import joblib
 import lime.lime_text
+from cachetools import cached, LRUCache
 
 # Load the model relative to the api directory
 model = joblib.load('../models/naive_bayes_lime/naive_bayes_model2.joblib')
@@ -21,7 +21,7 @@ def predict_review(review):
     # Make the prediction
     prediction = model.predict(review_vectorized)
 
-    return prediction[0]  # Return only the prediction label
+    return prediction.tolist()[0]  # Return only the prediction label
 
 def sum_weights(explainer):
     sum = 0
@@ -39,6 +39,7 @@ def format_influential_words(influential_words):
     return result_string
 
 # Function to explain predictions using LIME
+@cached(cache=LRUCache(maxsize=32))
 def explain_review(review):
     # Predict label
     prediction = predict_review(review)

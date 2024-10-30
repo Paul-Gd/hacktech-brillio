@@ -40,7 +40,7 @@ class ReviewPredictionResponse(BaseModel):
 
 
 @review_prediction_router.post("/review_prediction/")
-def review_prediction(review_req: ProductReviewRequest, request: Request) -> ReviewPredictionResponse:
+async def review_prediction(review_req: ProductReviewRequest, request: Request) -> ReviewPredictionResponse:
     if review_req.prediction_model == PredictionModels.NAIVE_BAYES:
         from models.naive_bayes_lime import explain_review
         computed_reviews_by_model = []
@@ -69,7 +69,9 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
     elif review_req.prediction_model == PredictionModels.GPT_4o or review_req.prediction_model == PredictionModels.GPT_4o_mini:
         from models.gpt_4 import analyze_and_sumarize_gpt
 
-        summary_and_rating_data = analyze_and_sumarize_gpt(review_req)
+        reviews = [dict_to_tuple({"text": review.text, "review_value":review.review_value}) for review in review_req.user_reviews]
+        summary_and_rating_data = analyze_and_sumarize_gpt(review_req.description, tuple(reviews),
+                                                                 dict_to_tuple(review_req.specs), review_req.prediction_model.value)
         computed_reviews_by_model = []
         for review in summary_and_rating_data["reviews"]:
             computed_reviews_by_model.append(
@@ -100,7 +102,7 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
 
         for review in review_req.user_reviews:
             response = prediction(review.text, bert_model, bert_tokenizer, device='cpu',
-                                num_features=len(review.text.split(' ')))
+                                  num_features=len(review.text.split(' ')))
 
             computed_reviews_by_model.append(
                 IndividualReviewResult(
@@ -111,7 +113,7 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
             )
 
             total_certainty += response.get("certainty", 0.0)
-            
+
             if response.get("predicted_label"):
                 positive_feedback.append(response.get("explanation"))
 
@@ -128,4 +130,7 @@ def review_prediction(review_req: ProductReviewRequest, request: Request) -> Rev
             aggregated_review_data=aggregated_review_data
         )
 
-    return ReviewPredictionResponse(reviews=[])
+    raise HTTPException(status_code=404, detail="Model not found")
+
+def dict_to_tuple(d: dict[str, str]) -> tuple[str, ...]:
+    return tuple(d.items())

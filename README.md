@@ -23,6 +23,11 @@ mode:
 
 # Developing the app
 
+## Figma design
+
+The Figma design can be
+found [here](https://www.figma.com/design/lqlL85ZXz1xZSefM9OsuOf/Hackathon---Brillio-challenge?node-id=0-1&node-type=canvas).
+
 ## Running the app
 
 1. Install dependencies into venv. Make sure you have python 3.12 installed:
@@ -35,20 +40,28 @@ mode:
 2. Start FastApi server:
     ```bash
    cd api
-   python3 -m uvicorn main:app --reload
+   OPENAI_API_KEY=<api_key> python3 -m uvicorn main:app --reload
    ```
 
 ## Hosting the app
 
-The app is hosted in Heroku
+The app was hosted in Heroku
 at [https://hacktech-brillio-e28a25e2835a.herokuapp.com](https://hacktech-brillio-e28a25e2835a.herokuapp.com).
 
 ### OpenAPI Documentation for the API
 
-You can access the OpenAPI documentation
-at [https://hacktech-brillio-e28a25e2835a.herokuapp.com/docs](https://hacktech-brillio-e28a25e2835a.herokuapp.com/docs),
-making it easy to integrate this API with other platforms.
+You can access the OpenAPI documentation at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), making it easy to
+integrate this API with other platforms.
 
 # Developing the extension
 
 Please check the source code for the extension in the `extension` folder for more info.
+
+# Contributors
+
+- [AunerArpad](https://github.com/AunerArpad)
+- [davidebara](https://github.com/davidebara)
+- [sebastianvlad1](https://github.com/sebastianvlad1)
+- [Kopa7](https://github.com/Kopa7)
+- [vaarga](https://github.com/vaarga)
+- [Paul-Gd](https://github.com/Paul-Gd)
